@@ -14,7 +14,7 @@ export async function DELETE(request: Request) {
 
     const deleted = await query<{ id: number }>(
       `DELETE FROM trades
-       WHERE id = $1 AND LOWER(status) = 'closed'
+       WHERE id = $1 AND LOWER(TRIM(status)) = 'closed'
        RETURNING id`,
       [tradeId]
     );
@@ -65,6 +65,8 @@ export async function GET() {
     return NextResponse.json(
       rows.map((r) => ({
         ...r,
+        action: r.action?.trim().toUpperCase(),
+        status: r.status?.trim().toLowerCase(),
         position_eur: r.position_eur ? parseFloat(r.position_eur) : null,
         entry_price: r.entry_price ? parseFloat(r.entry_price) : null,
         exit_price: r.exit_price ? parseFloat(r.exit_price) : null,
