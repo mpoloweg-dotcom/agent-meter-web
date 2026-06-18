@@ -14,6 +14,15 @@ const kindColors: Record<string, string> = {
   trade: "bg-green-900 text-green-300",
 };
 
+const kindLabels: Record<string, string> = {
+  note: "Bilješka",
+  analysis: "Razmišljanje",
+  decision: "Odluka",
+  error: "Greška",
+  trade: "Kupnja ili prodaja",
+  control: "Upravljanje agentom",
+};
+
 export default async function JournalPage() {
   let entries: { id: number; timestamp: string; kind: string; note: string }[] = [];
   let error: string | null = null;
@@ -29,14 +38,15 @@ export default async function JournalPage() {
   }
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Agent Journal</h1>
-      {error && <div className="bg-red-950 border border-red-800 text-red-300 rounded-lg p-4 mb-6">⚠️ {error}</div>}
-      {!error && entries.length === 0 && <p className="text-gray-500">Nema journal entry-ja.</p>}
+      <h1 className="text-2xl font-bold mb-2">Bilješke agenta</h1>
+      <p className="text-gray-400 mb-6">Što je agent primijetio, odlučio ili zabilježio tijekom rada.</p>
+      {error && <div className="bg-red-950 border border-red-800 text-red-300 rounded-lg p-4 mb-6">⚠️ Trenutno ne mogu dohvatiti bilješke.</div>}
+      {!error && entries.length === 0 && <p className="text-gray-500">Još nema bilješki.</p>}
       <div className="space-y-4">
         {entries.map((entry) => (
           <div key={entry.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <div className="flex items-center gap-3 mb-3">
-              <span className={`text-xs px-2 py-0.5 rounded font-medium ${kindColors[entry.kind] ?? "bg-gray-800 text-gray-400"}`}>{entry.kind}</span>
+              <span className={`text-xs px-2 py-0.5 rounded font-medium ${kindColors[entry.kind] ?? "bg-gray-800 text-gray-400"}`}>{kindLabels[entry.kind] ?? "Bilješka"}</span>
               <span className="text-xs text-gray-500">{fmtDate(entry.timestamp)}</span>
             </div>
             <p className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">{entry.note}</p>

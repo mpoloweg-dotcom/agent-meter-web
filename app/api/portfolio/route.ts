@@ -20,7 +20,7 @@ export async function GET() {
     }>(`
       SELECT id, instrument, action, position_eur, entry_price, timestamp, confidence
       FROM trades
-      WHERE status = 'open'
+      WHERE LOWER(TRIM(status)) = 'open'
       ORDER BY timestamp DESC
     `);
 
@@ -29,7 +29,7 @@ export async function GET() {
         COALESCE(SUM(pl_eur), 0) AS total_pnl,
         COUNT(*) AS closed_count
       FROM trades
-      WHERE status = 'closed'
+      WHERE LOWER(TRIM(status)) = 'closed'
     `);
 
     const committed = openRows.reduce((sum, r) => sum + parseFloat(r.position_eur || "0"), 0);

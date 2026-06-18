@@ -16,7 +16,7 @@ async function getPortfolio() {
     }>(`
       SELECT id, instrument, action, position_eur, entry_price, timestamp, confidence
       FROM trades
-      WHERE status = 'open'
+      WHERE LOWER(TRIM(status)) = 'open'
       ORDER BY timestamp DESC
     `);
 
@@ -25,7 +25,7 @@ async function getPortfolio() {
         COALESCE(SUM(pl_eur), 0) AS total_pnl,
         COUNT(*) AS closed_count
       FROM trades
-      WHERE status = 'closed'
+      WHERE LOWER(TRIM(status)) = 'closed'
     `);
 
     const initialCapital = parseFloat(process.env.INITIAL_CAPITAL_EUR || "1000");
@@ -104,33 +104,34 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-2">Pregled agenta</h1>
+      <p className="text-gray-400 mb-6">Ovdje vidiš koliko novca imamo, što je agent napravio i kada ponovno provjerava vijesti.</p>
       {!portfolio && (
         <div className="bg-red-950 border border-red-800 text-red-300 rounded-lg p-4 mb-6">
-          ⚠️ Nije moguće spojiti se na bazu. Provjeri DATABASE_URL env var.
+          ⚠️ Trenutno ne mogu dohvatiti podatke. Pokušaj ponovno malo kasnije.
         </div>
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Inicijalni kapital" value={`€${fmt(portfolio?.initialCapital)}`} />
-        <StatCard label="Dostupna gotovina" value={`€${fmt(portfolio?.availableCash)}`} color="text-emerald-400" />
-        <StatCard label="Angažirano" value={`€${fmt(portfolio?.committed)}`} color="text-yellow-400" />
-        <StatCard label="Ukupni P&L" value={`€${fmt(portfolio?.totalPnl)}`} color={pnlColor} sub={`${portfolio?.closedCount ?? 0} zatvorenih pozicija`} />
+        <StatCard label="Početni iznos" value={`€${fmt(portfolio?.initialCapital)}`} />
+        <StatCard label="Slobodno za nove odluke" value={`€${fmt(portfolio?.availableCash)}`} color="text-emerald-400" />
+        <StatCard label="Trenutno uloženo" value={`€${fmt(portfolio?.committed)}`} color="text-yellow-400" />
+        <StatCard label="Ukupna zarada ili gubitak" value={`€${fmt(portfolio?.totalPnl)}`} color={pnlColor} sub={`${portfolio?.closedCount ?? 0} završenih poteza`} />
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-          <h2 className="font-semibold text-lg mb-4">Otvorene pozicije ({portfolio?.openPositions?.length ?? 0})</h2>
+          <h2 className="font-semibold text-lg mb-4">Trenutno aktivno ({portfolio?.openPositions?.length ?? 0})</h2>
           {!portfolio?.openPositions?.length ? (
-            <p className="text-gray-500 text-sm">Nema otvorenih pozicija.</p>
+            <p className="text-gray-500 text-sm">Agent trenutačno nema aktivnih kupnji ili prodaja.</p>
           ) : (
             <div className="space-y-3">
               {portfolio.openPositions.map((pos) => (
                 <div key={pos.id} className="border border-gray-700 rounded-lg p-3 text-sm">
                   <div className="flex justify-between items-start">
                     <span className="font-semibold">{pos.instrument}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded font-medium ${pos.action === "BUY" ? "bg-emerald-900 text-emerald-300" : "bg-red-900 text-red-300"}`}>{pos.action}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded font-medium ${pos.action === "BUY" ? "bg-emerald-900 text-emerald-300" : "bg-red-900 text-red-300"}`}>{pos.action === "BUY" ? "Kupnja" : "Prodaja"}</span>
                   </div>
                   <div className="text-gray-400 mt-1 space-y-0.5">
-                    <p>€{fmt(pos.position_eur)} · ulaz: {fmt(pos.entry_price, 4)}</p>
+                    <p>Uloženo €{fmt(pos.position_eur)} · početna cijena: {fmt(pos.entry_price, 4)}</p>
                     <p className="text-xs text-gray-500">{fmtDate(pos.timestamp)}</p>
                     {pos.confidence && <p className="text-gray-500 italic text-xs">{pos.confidence}</p>}
                   </div>
@@ -138,21 +139,21 @@ export default async function DashboardPage() {
               ))}
             </div>
           )}
-          <Link href="/trades" className="mt-4 inline-block text-sm text-emerald-400 hover:text-emerald-300">Sve pozicije →</Link>
+          <Link href="/trades" className="mt-4 inline-block text-sm text-emerald-400 hover:text-emerald-300">Pogledaj sve poteze →</Link>
         </div>
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
-          <h2 className="font-semibold text-lg mb-4">Agent schedule</h2>
+          <h2 className="font-semibold text-lg mb-4">Sljedeća provjera vijesti</h2>
           {!nextWake ? (
-            <p className="text-gray-500 text-sm">Nema zakazanog buđenja.</p>
+            <p className="text-gray-500 text-sm">Trenutno nema zakazane sljedeće provjere.</p>
           ) : (
             <div>
-              <p className="text-sm text-gray-400 mb-1">Sljedeće buđenje</p>
+              <p className="text-sm text-gray-400 mb-1">Agent ponovno provjerava vijesti</p>
               <p className="text-xl font-bold text-emerald-400">{fmtDate(nextWake.wake_at)}</p>
               <p className="text-sm text-emerald-300 mt-0.5">{timeUntil(nextWake.wake_at)}</p>
               {nextWake.reason && <p className="text-sm text-gray-500 mt-1">{nextWake.reason}</p>}
             </div>
           )}
-          <Link href="/schedule" className="mt-4 inline-block text-sm text-emerald-400 hover:text-emerald-300">Cijeli schedule →</Link>
+          <Link href="/schedule" className="mt-4 inline-block text-sm text-emerald-400 hover:text-emerald-300">Pogledaj cijeli raspored →</Link>
         </div>
       </div>
     </div>
