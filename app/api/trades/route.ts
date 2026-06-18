@@ -8,40 +8,37 @@ export async function GET() {
     const rows = await query<{
       id: number;
       instrument: string;
-      side: string;
+      action: string;
       status: string;
-      amount_eur: string;
+      position_eur: string;
       entry_price: string;
       exit_price: string;
-      pnl_eur: string;
-      result: string;
+      pl_eur: string;
       reason: string;
-      thesis: string;
       confidence: string;
-      source_article_title: string;
-      source_article_url: string;
-      opened_at: string;
-      closed_at: string;
-      exit_reason: string;
+      article_title: string;
+      article_link: string;
+      claude_summary: string;
+      timestamp: string;
     }>(`
       SELECT
-        id, instrument, side, status,
-        amount_eur, entry_price, exit_price,
-        pnl_eur, result, reason, thesis, confidence,
-        source_article_title, source_article_url,
-        opened_at, closed_at, exit_reason
+        id, instrument, action, status,
+        position_eur, entry_price, exit_price,
+        pl_eur, reason, confidence,
+        article_title, article_link, claude_summary,
+        timestamp
       FROM trades
-      ORDER BY opened_at DESC
+      ORDER BY timestamp DESC
       LIMIT 200
     `);
 
     return NextResponse.json(
       rows.map((r) => ({
         ...r,
-        amount_eur: r.amount_eur ? parseFloat(r.amount_eur) : null,
+        position_eur: r.position_eur ? parseFloat(r.position_eur) : null,
         entry_price: r.entry_price ? parseFloat(r.entry_price) : null,
         exit_price: r.exit_price ? parseFloat(r.exit_price) : null,
-        pnl_eur: r.pnl_eur ? parseFloat(r.pnl_eur) : null,
+        pl_eur: r.pl_eur ? parseFloat(r.pl_eur) : null,
       }))
     );
   } catch (e: unknown) {
