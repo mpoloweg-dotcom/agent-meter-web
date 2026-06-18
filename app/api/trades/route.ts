@@ -3,6 +3,18 @@ import { query } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
+export async function DELETE(request: Request) {
+  try {
+    const { id } = await request.json();
+    if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    await query(`DELETE FROM trades WHERE id = $1 AND status = 'closed'`, [id]);
+    return NextResponse.json({ ok: true });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function GET() {
   try {
     const rows = await query<{
