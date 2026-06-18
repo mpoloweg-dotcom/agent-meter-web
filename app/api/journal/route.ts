@@ -10,14 +10,13 @@ export async function GET(request: Request) {
   try {
     const rows = await query<{
       id: number;
-      created_at: string;
-      entry_type: string;
-      content: string;
-      metadata: Record<string, unknown>;
+      timestamp: string;
+      note: string;
+      kind: string;
     }>(`
-      SELECT id, created_at, entry_type, content, metadata
+      SELECT id, timestamp, note, kind
       FROM agent_journal
-      ORDER BY created_at DESC
+      ORDER BY timestamp DESC
       LIMIT $1
     `, [limit]);
 
