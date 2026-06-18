@@ -32,7 +32,9 @@ type Trade = {
 export default function TradesPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
+  const [deleting, setDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,25 +59,39 @@ export default function TradesPage() {
     return () => controller.abort();
   }, []);
 
-  async function handleDelete(id: number) {
-    if (!confirm("Želiš li trajno obrisati ovaj završeni zapis?")) return;
-    setDeleting(id);
+  async function deleteFinished(body: { ids?: number[]; allFinished?: boolean }) {
+    setDeleting(true);
     try {
       const r = await fetch("/api/trades", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify(body),
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error ?? "Brisanje nije uspjelo.");
-      if (data.deletedId !== id) throw new Error("Poslužitelj nije potvrdio brisanje.");
+      if (!Array.isArray(data.deletedIds)) {
+        throw new Error("Brisanje nije potvrđeno.");
+      }
 
-      setTrades((prev) => prev.filter((t) => t.id !== id));
+      const deletedIds = new Set<number>(data.deletedIds.map(Number));
+      setTrades((prev) => prev.filter((t) => !deletedIds.has(t.id)));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        deletedIds.forEach((id) => next.delete(id));
+        return next;
+      });
     } catch (e) {
       alert(e instanceof Error ? e.message : "Brisanje nije uspjelo.");
     } finally {
-      setDeleting(null);
+      setDeleting(false);
+      setDeletingId(null);
     }
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm("Želiš li trajno obrisati ovaj završeni zapis?")) return;
+    setDeletingId(id);
+    await deleteFinished({ ids: [id] });
   }
 
   const open = trades.filter((t) => t.status === "open");
@@ -83,6 +99,37 @@ export default function TradesPage() {
   const totalPnl = closed.reduce((sum, t) => sum + (t.pl_eur ?? 0), 0);
   const wins = closed.filter((t) => (t.pl_eur ?? 0) > 0).length;
   const winRate = closed.length ? ((wins / closed.length) * 100).toFixed(0) : "—";
+  const selectedClosedIds = closed.filter((t) => selectedIds.has(t.id)).map((t) => t.id);
+  const allFinishedSelected = closed.length > 0 && selectedClosedIds.length === closed.length;
+
+  function toggleSelected(id: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAllFinished() {
+    if (allFinishedSelected) {
+      setSelectedIds(new Set());
+      return;
+    }
+    setSelectedIds(new Set(closed.map((t) => t.id)));
+  }
+
+  async function handleDeleteSelected() {
+    if (selectedClosedIds.length === 0) return;
+    if (!confirm(`Želiš li trajno obrisati ${selectedClosedIds.length} označenih zapisa?`)) return;
+    await deleteFinished({ ids: selectedClosedIds });
+  }
+
+  async function handleDeleteAllFinished() {
+    if (closed.length === 0) return;
+    if (!confirm(`Ovo će trajno obrisati svih ${closed.length} završenih zapisa. Želiš li nastaviti?`)) return;
+    await deleteFinished({ allFinished: true });
+  }
 
   return (
     <div>
@@ -107,10 +154,49 @@ export default function TradesPage() {
         </span>
       </div>
 
+      {!loading && closed.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-800 bg-gray-900 p-3">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-200">
+            <input
+              type="checkbox"
+              checked={allFinishedSelected}
+              onChange={toggleAllFinished}
+              disabled={deleting}
+              className="h-4 w-4 accent-emerald-500"
+            />
+            Označi sve završene
+          </label>
+          <span className="text-sm text-gray-500">
+            Označeno: {selectedClosedIds.length}
+          </span>
+          <div className="flex flex-wrap gap-2 sm:ml-auto">
+            <button
+              type="button"
+              onClick={handleDeleteSelected}
+              disabled={deleting || selectedClosedIds.length === 0}
+              className="rounded-lg bg-red-900 px-3 py-2 text-sm font-medium text-red-100 transition-colors hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {deleting && selectedClosedIds.length > 0 ? "Brišem…" : `Obriši označene (${selectedClosedIds.length})`}
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteAllFinished}
+              disabled={deleting}
+              className="rounded-lg border border-red-900 px-3 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-950 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Obriši sve završene ({closed.length})
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto rounded-xl border border-gray-800">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-900 text-gray-400 text-left">
+              <th className="px-4 py-3">
+                <span className="sr-only">Odabir</span>
+              </th>
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Što</th>
               <th className="px-4 py-3">Potez</th>
@@ -127,14 +213,14 @@ export default function TradesPage() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={11} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={12} className="px-4 py-6 text-center text-gray-500">
                   Učitavam trejdove…
                 </td>
               </tr>
             )}
             {!loading && trades.length === 0 && !error && (
               <tr>
-                <td colSpan={11} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={12} className="px-4 py-6 text-center text-gray-500">
                   Još nema zabilježenih poteza.
                 </td>
               </tr>
@@ -144,6 +230,18 @@ export default function TradesPage() {
                 key={t.id}
                 className="border-t border-gray-800 hover:bg-gray-900/50 transition-colors"
               >
+                <td className="px-4 py-3">
+                  {t.status === "closed" && (
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(t.id)}
+                      onChange={() => toggleSelected(t.id)}
+                      disabled={deleting}
+                      className="h-4 w-4 accent-emerald-500"
+                      aria-label={`Označi završeni zapis ${t.id}`}
+                    />
+                  )}
+                </td>
                 <td className="px-4 py-3 text-gray-500">{t.id}</td>
                 <td className="px-4 py-3 font-medium">{t.instrument}</td>
                 <td className="px-4 py-3">
@@ -176,12 +274,12 @@ export default function TradesPage() {
                   {t.status === "closed" && (
                     <button
                       onClick={() => handleDelete(t.id)}
-                      disabled={deleting === t.id}
+                      disabled={deleting}
                       className="text-gray-600 hover:text-red-400 transition-colors disabled:opacity-30 text-lg leading-none"
                       title="Obriši zapis"
                       aria-label={`Obriši završeni zapis ${t.id}`}
                     >
-                      {deleting === t.id ? "…" : "🗑"}
+                      {deletingId === t.id ? "…" : "🗑"}
                     </button>
                   )}
                 </td>
