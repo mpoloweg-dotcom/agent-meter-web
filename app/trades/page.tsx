@@ -146,4 +146,29 @@ export default function TradesPage() {
                 <td className={`px-4 py-3 font-medium ${
                   t.pl_eur == null ? "text-gray-500" : t.pl_eur > 0 ? "text-emerald-400" : "text-red-400"
                 }`}>
-                  {t.pl_eur != null ? `€${fmt(t.pl_eur)}` 
+                  {t.pl_eur != null ? `€${fmt(t.pl_eur)}` : "—"}
+                </td>
+                <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">{fmtDate(t.timestamp)}</td>
+                <td className="px-4 py-3 text-gray-400 max-w-xs">
+                  <span className="line-clamp-1 text-xs">{t.reason ?? "—"}</span>
+                </td>
+                <td className="px-4 py-3">
+                  {t.status === "closed" && (
+                    <button
+                      onClick={() => handleDelete(t.id)}
+                      disabled={deleting === t.id}
+                      className="text-gray-600 hover:text-red-400 transition-colors disabled:opacity-30 text-lg leading-none"
+                      title="Obriši trade"
+                    >
+                      {deleting === t.id ? "…" : "🗑"}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
