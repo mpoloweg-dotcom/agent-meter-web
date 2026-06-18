@@ -1,13 +1,6 @@
-export const dynamic = "force-dynamic";
+import { query } from "@/lib/db";
 
-async function getSchedule() {
-  const base = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
-  const res = await fetch(`${base}/api/schedule`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
-}
+export const dynamic = "force-dynamic";
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("hr-HR", { timeZone: "Europe/Zagreb" });
@@ -22,20 +15,24 @@ function timeUntil(iso: string) {
   return `za ${hours}h ${mins % 60}min`;
 }
 
-type ScheduleRow = {
-  id: number;
-  created_at: string;
-  wake_at: string;
-  reason: string;
-};
-
 export default async function SchedulePage() {
-  const rows: ScheduleRow[] = await getSchedule();
+  let rows: { id: number; created_at: string; wake_at: string; reason: string }[] = [];
+  let error: string | null = null;
+  try {
+    rows = await query<{ id: number; created_at: string; wake_at: string; reason: string }>(`
+      SELECT id, created_at, wake_at, reason
+      FROM agent_schedule
+      ORDER BY created_at DESC
+      LIMIT 20
+    `);
+  } catch (e: unknown) {
+    error = e instanceof Error ? e.message : String(e);
+  }
   const next = rows[0];
-
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Agent Schedule</h1>
+      {error && <div className="bg-red-950 border border-red-800 text-red-300 rounded-lg p-4 mb-6">⚠️ {error}</div>}
       {next && (
         <div className="bg-emerald-950 border border-emerald-800 rounded-xl p-5 mb-6">
           <p className="text-sm text-emerald-400 mb-1">Sljedeće buđenje</p>
@@ -46,18 +43,11 @@ export default async function SchedulePage() {
       )}
       <div className="overflow-x-auto rounded-xl border border-gray-800">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-900 text-gray-400 text-left">
-              <th className="px-4 py-3">ID</th>
-              <th className="px-4 py-3">Zakazano za</th>
-              <th className="px-4 py-3">Kreirano</th>
-              <th className="px-4 py-3">Razlog</th>
-            </tr>
-          </thead>
+          <thead><tr className="bg-gray-900 text-gray-400 text-left">
+            <th className="px-4 py-3">ID</th><th className="px-4 py-3">Zakazano za</th><th className="px-4 py-3">Kreirano</th><th className="px-4 py-3">Razlog</th>
+          </tr></thead>
           <tbody>
-            {rows.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-500">Nema zakazanih buđenja.</td></tr>
-            )}
+            {rows.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-500">Nema zakazanih buđenja.</td></tr>}
             {rows.map((row) => (
               <tr key={row.id} className="border-t border-gray-800 hover:bg-gray-900/50 transition-colors">
                 <td className="px-4 py-3 text-gray-500">{row.id}</td>
