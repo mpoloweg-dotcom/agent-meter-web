@@ -6,9 +6,27 @@ export const dynamic = "force-dynamic";
 export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
-    if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
-    await query(`DELETE FROM trades WHERE id = $1 AND status = 'closed'`, [id]);
-    return NextResponse.json({ ok: true });
+    const tradeId = Number(id);
+
+    if (!Number.isSafeInteger(tradeId) || tradeId <= 0) {
+      return NextResponse.json({ error: "Neispravan ID trejda." }, { status: 400 });
+    }
+
+    const deleted = await query<{ id: number }>(
+      `DELETE FROM trades
+       WHERE id = $1 AND LOWER(status) = 'closed'
+       RETURNING id`,
+      [tradeId]
+    );
+
+    if (deleted.length === 0) {
+      return NextResponse.json(
+        { error: "Zatvoreni trejd nije pronađen ili se ne smije obrisati." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, deletedId: deleted[0].id });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
     return NextResponse.json({ error: message }, { status: 500 });

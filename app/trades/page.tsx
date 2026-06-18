@@ -33,19 +33,32 @@ export default function TradesPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/trades")
-      .then((r) => r.json())
+    const controller = new AbortController();
+
+    fetch("/api/trades", { signal: controller.signal })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error ?? "Dohvat nije uspio.");
+        return data;
+      })
       .then((data) => {
         if (Array.isArray(data)) setTrades(data);
-        else setError(data.error ?? "Greška");
+        else throw new Error("Poslužitelj je vratio neočekivan odgovor.");
       })
-      .catch((e) => setError(String(e)));
+      .catch((e) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
   }, []);
 
   async function handleDelete(id: number) {
-    if (!confirm("Obrisati ovaj trade?")) return;
+    if (!confirm("Želiš li trajno obrisati ovaj zatvoreni trejd?")) return;
     setDeleting(id);
     try {
       const r = await fetch("/api/trades", {
@@ -53,14 +66,13 @@ export default function TradesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
-      if (r.ok) {
-        setTrades((prev) => prev.filter((t) => t.id !== id));
-      } else {
-        const d = await r.json();
-        alert("Greška: " + (d.error ?? "nepoznata"));
-      }
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error ?? "Brisanje nije uspjelo.");
+      if (data.deletedId !== id) throw new Error("Poslužitelj nije potvrdio brisanje.");
+
+      setTrades((prev) => prev.filter((t) => t.id !== id));
     } catch (e) {
-      alert("Greška: " + String(e));
+      alert(e instanceof Error ? e.message : "Brisanje nije uspjelo.");
     } finally {
       setDeleting(null);
     }
@@ -112,7 +124,14 @@ export default function TradesPage() {
             </tr>
           </thead>
           <tbody>
-            {trades.length === 0 && !error && (
+            {loading && (
+              <tr>
+                <td colSpan={11} className="px-4 py-6 text-center text-gray-500">
+                  Učitavam trejdove…
+                </td>
+              </tr>
+            )}
+            {!loading && trades.length === 0 && !error && (
               <tr>
                 <td colSpan={11} className="px-4 py-6 text-center text-gray-500">
                   Nema trade-ova.
@@ -159,6 +178,7 @@ export default function TradesPage() {
                       disabled={deleting === t.id}
                       className="text-gray-600 hover:text-red-400 transition-colors disabled:opacity-30 text-lg leading-none"
                       title="Obriši trade"
+                      aria-label={`Obriši zatvoreni trejd ${t.id}`}
                     >
                       {deleting === t.id ? "…" : "🗑"}
                     </button>
