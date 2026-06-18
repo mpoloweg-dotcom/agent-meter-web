@@ -15,16 +15,17 @@ function fmtDate(iso: string) {
 
 type JournalEntry = {
   id: number;
-  created_at: string;
-  entry_type: string;
-  content: string;
+  timestamp: string;
+  kind: string;
+  note: string;
 };
 
-const typeColors: Record<string, string> = {
+const kindColors: Record<string, string> = {
   note: "bg-blue-900 text-blue-300",
   analysis: "bg-purple-900 text-purple-300",
   decision: "bg-yellow-900 text-yellow-300",
   error: "bg-red-900 text-red-300",
+  trade: "bg-green-900 text-green-300",
 };
 
 export default async function JournalPage() {
@@ -47,15 +48,15 @@ export default async function JournalPage() {
             <div className="flex items-center gap-3 mb-3">
               <span
                 className={`text-xs px-2 py-0.5 rounded font-medium ${
-                  typeColors[entry.entry_type] ?? "bg-gray-800 text-gray-400"
+                  kindColors[entry.kind] ?? "bg-gray-800 text-gray-400"
                 }`}
               >
-                {entry.entry_type}
+                {entry.kind}
               </span>
-              <span className="text-xs text-gray-500">{fmtDate(entry.created_at)}</span>
+              <span className="text-xs text-gray-500">{fmtDate(entry.timestamp)}</span>
             </div>
             <p className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">
-              {entry.content}
+              {entry.note}
             </p>
           </div>
         ))}
