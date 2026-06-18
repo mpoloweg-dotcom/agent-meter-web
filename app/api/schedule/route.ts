@@ -10,9 +10,8 @@ export async function GET() {
       created_at: string;
       wake_at: string;
       reason: string;
-      status: string;
     }>(`
-      SELECT id, created_at, wake_at, reason, status
+      SELECT id, created_at, wake_at, reason
       FROM agent_schedule
       ORDER BY created_at DESC
       LIMIT 20
