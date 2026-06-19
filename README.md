@@ -1,5 +1,8 @@
 # agentRaider Web
 
+Verzija 3.0 dodaje pregled odluka i dokaza, stvarnog kretanja cijene, unaprijed
+ograničenog mogućeg gubitka i odvojene uspješnosti nove taktike.
+
 Next.js pregled agenta agentRaider. Prikazuje lažne kupnje i prodaje, raspored
 15-minutnih provjera te omogućuje promjenu taktike agenta.
 

@@ -77,13 +77,24 @@ export async function GET() {
       article_title: string;
       article_link: string;
       claude_summary: string;
+      evidence: Array<{ source: string; title: string; url?: string }> | null;
+      invalidation: string | null;
+      previous_close: string | null;
+      price_change_pct: string | null;
+      stop_loss_price: string | null;
+      take_profit_price: string | null;
+      estimated_risk_eur: string | null;
+      strategy_used: string | null;
+      agent_version: string | null;
       timestamp: string;
     }>(`
       SELECT
         id, instrument, action, status,
         position_eur, entry_price, exit_price,
         pl_eur, reason, confidence,
-        article_title, article_link, claude_summary,
+        article_title, article_link, claude_summary, evidence, invalidation,
+        previous_close, price_change_pct, stop_loss_price, take_profit_price,
+        estimated_risk_eur, strategy_used, agent_version,
         timestamp
       FROM trades
       ORDER BY timestamp DESC
@@ -103,6 +114,11 @@ export async function GET() {
         entry_price: r.entry_price ? parseFloat(r.entry_price) : null,
         exit_price: r.exit_price ? parseFloat(r.exit_price) : null,
         pl_eur: r.pl_eur ? parseFloat(r.pl_eur) : null,
+        previous_close: r.previous_close ? parseFloat(r.previous_close) : null,
+        price_change_pct: r.price_change_pct ? parseFloat(r.price_change_pct) : null,
+        stop_loss_price: r.stop_loss_price ? parseFloat(r.stop_loss_price) : null,
+        take_profit_price: r.take_profit_price ? parseFloat(r.take_profit_price) : null,
+        estimated_risk_eur: r.estimated_risk_eur ? parseFloat(r.estimated_risk_eur) : null,
       }))
     );
   } catch (e: unknown) {

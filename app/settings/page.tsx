@@ -8,18 +8,18 @@ type SettingsData = {
   updatedAt: string | null;
   checkIntervalMinutes: number;
   sources: string[];
-  tactics: Record<Strategy, { limit: number; windowHours: number; used: number }>;
+  tactics: Record<Strategy, { limit: number; windowHours: number; used: number; minimumConfidence: number; maximumRiskPercent: number }>;
 };
 
 const tacticCopy = {
   patient: {
     name: "Strpljiva taktika",
-    description: "Agent čeka jače prilike i smije otvoriti najviše 3 nova poteza u 7 dana.",
+    description: "Agent čeka jače prilike, traži najmanje dva izvora i smije otvoriti najviše 3 nova poteza u 7 dana.",
     button: "Uključi strpljivu taktiku",
   },
   fast: {
     name: "Brza taktika",
-    description: "Agent može brže reagirati i smije otvoriti najviše 3 nova poteza u 24 sata.",
+    description: "Agent ranije reagira samo na snažan događaj potvrđen stvarnom cijenom. Najviše 3 nova poteza u 24 sata.",
     button: "Uključi brzu taktiku",
   },
 } satisfies Record<Strategy, { name: string; description: string; button: string }>;
@@ -75,7 +75,10 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-bold">Postavke agenta</h1>
+      <div className="mb-2 flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-bold">Postavke agenta</h1>
+        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">3.0</span>
+      </div>
       <p className="mb-6 text-gray-400">
         Ovdje biraš koliko će agent biti strpljiv ili brz. Vijesti u oba slučaja provjerava svakih 15 minuta.
       </p>
@@ -104,6 +107,10 @@ export default function SettingsPage() {
                   <p className="mb-4 text-sm text-gray-400">
                     Preostalo sada: <span className="font-semibold text-white">{remaining} od {usage.limit}</span>
                   </p>
+                  <div className="mb-4 space-y-1 rounded-lg bg-gray-950/70 p-3 text-xs text-gray-400">
+                    <p>Najmanja sigurnost: <span className="font-semibold text-white">{usage.minimumConfidence}/100</span></p>
+                    <p>Najveći mogući gubitak po potezu: <span className="font-semibold text-white">{usage.maximumRiskPercent}% novca</span></p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => changeStrategy(strategy)}
@@ -126,6 +133,9 @@ export default function SettingsPage() {
             </div>
             <p className="mt-4 text-sm text-gray-400">
               Provjera se radi svakih {data.checkIntervalMinutes} minuta. Zatvaranje postojećeg poteza nije ograničeno ako agent treba zaštititi novac.
+            </p>
+            <p className="mt-2 text-sm text-gray-400">
+              Novi potez nije dopušten bez najmanje dva izvora, potvrde stvarnog kretanja cijene i unaprijed određene granice gubitka.
             </p>
           </section>
         </>

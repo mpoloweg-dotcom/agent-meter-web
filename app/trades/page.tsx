@@ -26,6 +26,15 @@ type Trade = {
   article_title: string | null;
   article_link: string | null;
   claude_summary: string | null;
+  evidence: Array<{ source: string; title: string; url?: string }> | null;
+  invalidation: string | null;
+  previous_close: number | null;
+  price_change_pct: number | null;
+  stop_loss_price: number | null;
+  take_profit_price: number | null;
+  estimated_risk_eur: number | null;
+  strategy_used: string | null;
+  agent_version: string | null;
   timestamp: string | null;
 };
 
@@ -133,7 +142,10 @@ export default function TradesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-2">Kupnje i prodaje</h1>
+      <div className="mb-2 flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-bold">Kupnje i prodaje</h1>
+        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">3.0</span>
+      </div>
       <p className="text-gray-400 mb-6">Svi potezi koje je agent napravio s novcem za vježbu.</p>
 
       {error && (
@@ -268,7 +280,28 @@ export default function TradesPage() {
                 </td>
                 <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">{fmtDate(t.timestamp)}</td>
                 <td className="px-4 py-3 text-gray-400 max-w-xs">
-                  <span className="line-clamp-1 text-xs">{t.reason ?? "—"}</span>
+                  <span className="line-clamp-2 text-xs">{t.reason ?? "—"}</span>
+                  {t.agent_version === "3.0" && (
+                    <details className="mt-2 text-xs">
+                      <summary className="cursor-pointer text-emerald-400">Pogledaj plan i dokaze</summary>
+                      <div className="mt-2 min-w-64 space-y-2 rounded-lg border border-gray-700 bg-gray-950 p-3 leading-relaxed">
+                        {t.claude_summary && <p><span className="font-semibold text-gray-300">Objašnjenje:</span> {t.claude_summary}</p>}
+                        {t.invalidation && <p><span className="font-semibold text-orange-300">Kad priznaje pogrešku:</span> {t.invalidation}</p>}
+                        <p><span className="font-semibold text-gray-300">Granica gubitka:</span> {fmt(t.stop_loss_price, 4)}</p>
+                        <p><span className="font-semibold text-gray-300">Cilj dobiti:</span> {fmt(t.take_profit_price, 4)}</p>
+                        <p><span className="font-semibold text-gray-300">Najviše planira izgubiti:</span> €{fmt(t.estimated_risk_eur)}</p>
+                        <p><span className="font-semibold text-gray-300">Kretanje cijene pri odluci:</span> {t.price_change_pct == null ? "—" : `${t.price_change_pct >= 0 ? "+" : ""}${t.price_change_pct.toFixed(2)}%`}</p>
+                        {Array.isArray(t.evidence) && t.evidence.length > 0 && (
+                          <div>
+                            <p className="font-semibold text-gray-300">Izvori:</p>
+                            <ul className="mt-1 list-disc space-y-1 pl-4">
+                              {t.evidence.map((item, index) => <li key={`${item.source}-${index}`}>{item.source}: {item.title}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {t.status === "closed" && (
