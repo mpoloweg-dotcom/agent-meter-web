@@ -1,6 +1,7 @@
 # Agent Meter Web
 
-Next.js dashboard za praćenje Agent Meter paper-trading agenta.
+Next.js pregled Agent Metera. Prikazuje lažne kupnje i prodaje, raspored
+15-minutnih provjera te omogućuje promjenu taktike agenta.
 
 ## Setup
 
@@ -24,7 +25,11 @@ Otvori http://localhost:3000
 
 ## Stranice
 
-- `/` — kapital, P&L, otvorene pozicije, sljedeće buđenje
-- `/trades` — tablica svih trade-ova s P&L
-- `/journal` — agent journal bilješke
-- `/schedule` — raspored buđenja agenta
+- `/` — stanje novca i sljedeća provjera
+- `/trades` — svi aktivni i završeni potezi
+- `/journal` — bilješke agenta
+- `/schedule` — raspored provjera vijesti
+- `/settings` — strpljiva ili brza taktika i aktivni izvori
+
+Agent čita Bloomberg, Reuters i Trading Economics. Strpljiva taktika dopušta
+najviše 3 nova poteza u 7 dana, a brza najviše 3 u 24 sata.

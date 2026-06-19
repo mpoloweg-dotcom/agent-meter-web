@@ -25,6 +25,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/schedule" className="text-gray-300 hover:text-white transition-colors">
             Raspored
           </Link>
+          <Link href="/settings" className="text-gray-300 hover:text-white transition-colors">
+            Postavke
+          </Link>
         </nav>
         <main className="p-4 sm:p-6 max-w-7xl mx-auto">{children}</main>
       </body>
