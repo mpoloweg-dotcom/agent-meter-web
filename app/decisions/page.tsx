@@ -82,7 +82,7 @@ export default async function DecisionsPage() {
                 </div>
                 <div className="rounded-lg bg-gray-950 p-3">
                   <p className="text-gray-500">Stvarna cijena</p>
-                  <p className="mt-1 font-semibold">{decision.current_price ?? "Nije provjerena"}</p>
+                  <p className="mt-1 font-semibold">{decision.current_price == null ? "Nije provjerena" : Number(decision.current_price).toFixed(4)}</p>
                 </div>
                 <div className="rounded-lg bg-gray-950 p-3">
                   <p className="text-gray-500">Kretanje cijene</p>
