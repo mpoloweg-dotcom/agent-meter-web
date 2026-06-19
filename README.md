@@ -1,6 +1,6 @@
-# Agent Meter Web
+# agentRaider Web
 
-Next.js pregled Agent Metera. Prikazuje lažne kupnje i prodaje, raspored
+Next.js pregled agenta agentRaider. Prikazuje lažne kupnje i prodaje, raspored
 15-minutnih provjera te omogućuje promjenu taktike agenta.
 
 ## Setup
