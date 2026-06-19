@@ -22,6 +22,7 @@ export default async function SchedulePage() {
     rows = await query<{ id: number; created_at: string; wake_at: string; reason: string }>(`
       SELECT id, created_at, wake_at, reason
       FROM agent_schedule
+      WHERE COALESCE(reason, '') !~* '(geopolitika|meter|zoran)'
       ORDER BY created_at DESC
       LIMIT 20
     `);

@@ -60,6 +60,7 @@ async function getSchedule() {
     }>(`
       SELECT id, created_at, wake_at, reason
       FROM agent_schedule
+      WHERE COALESCE(reason, '') !~* '(geopolitika|meter|zoran)'
       ORDER BY created_at DESC
       LIMIT 5
     `);

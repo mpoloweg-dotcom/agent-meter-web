@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     }>(`
       SELECT id, timestamp, note, kind
       FROM agent_journal
+      WHERE COALESCE(note, '') !~* '(geopolitika|meter|zoran)'
       ORDER BY timestamp DESC
       LIMIT $1
     `, [limit]);

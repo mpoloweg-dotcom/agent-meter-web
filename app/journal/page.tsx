@@ -30,6 +30,7 @@ export default async function JournalPage() {
     entries = await query<{ id: number; timestamp: string; kind: string; note: string }>(`
       SELECT id, timestamp, note, kind
       FROM agent_journal
+      WHERE COALESCE(note, '') !~* '(geopolitika|meter|zoran)'
       ORDER BY timestamp DESC
       LIMIT 50
     `);

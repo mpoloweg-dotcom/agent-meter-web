@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { hideOldSourceText, isOldSourceText } from "@/lib/history";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +95,10 @@ export async function GET() {
         ...r,
         action: r.action?.trim().toUpperCase(),
         status: r.status?.trim().toLowerCase(),
+        reason: hideOldSourceText(r.reason),
+        article_title: hideOldSourceText(r.article_title),
+        article_link: isOldSourceText(r.article_link) ? null : r.article_link,
+        claude_summary: hideOldSourceText(r.claude_summary),
         position_eur: r.position_eur ? parseFloat(r.position_eur) : null,
         entry_price: r.entry_price ? parseFloat(r.entry_price) : null,
         exit_price: r.exit_price ? parseFloat(r.exit_price) : null,
