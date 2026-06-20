@@ -14,12 +14,12 @@ export async function GET() {
         COALESCE(MIN(pl_eur) FILTER (WHERE LOWER(COALESCE(status, '')) = 'closed'), 0) AS largest_loss,
         COALESCE(SUM(estimated_risk_eur) FILTER (WHERE LOWER(COALESCE(status, 'open')) = 'open'), 0) AS open_risk
       FROM trades
-      WHERE agent_version = '3.0'
+      WHERE agent_version = '4.0'
     `);
     const closed = Number(row?.closed_count ?? 0);
     const wins = Number(row?.wins ?? 0);
     return NextResponse.json({
-      version: "3.0",
+      version: "4.0",
       closedCount: closed,
       wins,
       winRate: closed ? Number(((wins / closed) * 100).toFixed(1)) : null,

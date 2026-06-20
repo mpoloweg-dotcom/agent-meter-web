@@ -36,7 +36,7 @@ export default async function DecisionsPage() {
       SELECT id, timestamp, outcome, instrument, action, summary, evidence,
              invalidation, confidence_score, current_price, price_change_pct, strategy
       FROM agent_decisions
-      WHERE agent_version = '3.0'
+      WHERE agent_version IN ('4.0', '3.0')
       ORDER BY timestamp DESC, id DESC
       LIMIT 50
     `);
@@ -47,7 +47,7 @@ export default async function DecisionsPage() {
   return (
     <div>
       <div className="mb-6">
-        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">Verzija 3.0</span>
+        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">Verzija 4.0</span>
         <h1 className="mt-3 text-2xl font-bold">Odluke i dokazi</h1>
         <p className="mt-2 text-gray-400">Ovdje vidiš zašto je agent nešto napravio ili zašto je odlučio čekati.</p>
       </div>
@@ -55,7 +55,7 @@ export default async function DecisionsPage() {
       {error && <div className="rounded-xl border border-yellow-900 bg-yellow-950/40 p-4 text-yellow-200">Nova evidencija se upravo priprema. Pokušaj ponovno malo kasnije.</div>}
       {!error && decisions.length === 0 && (
         <div className="rounded-xl border border-gray-800 bg-gray-900 p-6 text-gray-400">
-          Verzija 3.0 je tek krenula. Prva odluka pojavit će se nakon sljedeće provjere vijesti.
+          Verzija 4.0 je tek krenula. Prva odluka pojavit će se nakon sljedeće provjere vijesti.
         </div>
       )}
 

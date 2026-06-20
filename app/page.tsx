@@ -69,7 +69,7 @@ async function getSchedule() {
   }
 }
 
-async function getV3Insight() {
+async function getV4Insight() {
   try {
     const [performance] = await query<{
       closed_count: string;
@@ -87,7 +87,7 @@ async function getV3Insight() {
         COALESCE(MIN(pl_eur) FILTER (WHERE LOWER(COALESCE(status, '')) = 'closed'), 0) AS largest_loss,
         COALESCE(SUM(estimated_risk_eur) FILTER (WHERE LOWER(COALESCE(status, 'open')) = 'open'), 0) AS open_risk
       FROM trades
-      WHERE agent_version = '3.0'
+      WHERE agent_version = '4.0'
     `);
     const [latest] = await query<{
       timestamp: string;
@@ -97,7 +97,7 @@ async function getV3Insight() {
     }>(`
       SELECT timestamp, outcome, summary, confidence_score
       FROM agent_decisions
-      WHERE agent_version = '3.0'
+      WHERE agent_version IN ('4.0', '3.0')
       ORDER BY timestamp DESC, id DESC
       LIMIT 1
     `);
@@ -147,7 +147,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
 }
 
 export default async function DashboardPage() {
-  const [portfolio, schedule, v3] = await Promise.all([getPortfolio(), getSchedule(), getV3Insight()]);
+  const [portfolio, schedule, v4] = await Promise.all([getPortfolio(), getSchedule(), getV4Insight()]);
   const nextWake = schedule?.[0];
   const pnlColor = portfolio?.totalPnl == null ? "" : portfolio.totalPnl > 0 ? "text-emerald-400" : portfolio.totalPnl < 0 ? "text-red-400" : "text-gray-300";
 
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
     <div>
       <div className="mb-2 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">Pregled agenta</h1>
-        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">Verzija 3.0</span>
+        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">Verzija 4.0</span>
       </div>
       <p className="text-gray-400 mb-6">Ovdje vidiš koliko novca imamo, što je agent napravio i kada ponovno provjerava vijesti.</p>
       {!portfolio && (
@@ -172,38 +172,38 @@ export default async function DashboardPage() {
       <section className="mb-8 rounded-xl border border-emerald-900/70 bg-emerald-950/20 p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold">Kako radi verzija 3.0</h2>
+            <h2 className="text-lg font-semibold">Kako radi verzija 4.0</h2>
             <p className="mt-1 text-sm text-gray-400">Rezultati nove strože taktike odvojeni su od stare povijesti.</p>
           </div>
           <Link href="/decisions" className="text-sm text-emerald-400 hover:text-emerald-300">Pogledaj odluke i dokaze →</Link>
         </div>
-        {!v3 ? (
-          <p className="text-sm text-gray-500">Novi pregled će se pojaviti nakon prve provjere verzije 3.0.</p>
+        {!v4 ? (
+          <p className="text-sm text-gray-500">Novi pregled će se pojaviti nakon prve provjere verzije 4.0.</p>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <div className="rounded-lg bg-gray-950/70 p-4">
                 <p className="text-xs text-gray-500">Završeni potezi</p>
-                <p className="mt-1 text-xl font-bold">{v3.closed}</p>
+                <p className="mt-1 text-xl font-bold">{v4.closed}</p>
               </div>
               <div className="rounded-lg bg-gray-950/70 p-4">
                 <p className="text-xs text-gray-500">Uspješnost</p>
-                <p className="mt-1 text-xl font-bold">{v3.winRate == null ? "Čeka podatke" : `${v3.winRate.toFixed(0)}%`}</p>
+                <p className="mt-1 text-xl font-bold">{v4.winRate == null ? "Čeka podatke" : `${v4.winRate.toFixed(0)}%`}</p>
               </div>
               <div className="rounded-lg bg-gray-950/70 p-4">
                 <p className="text-xs text-gray-500">Prosječan rezultat</p>
-                <p className={`mt-1 text-xl font-bold ${v3.averagePnl > 0 ? "text-emerald-400" : v3.averagePnl < 0 ? "text-red-400" : ""}`}>€{fmt(v3.averagePnl)}</p>
+                <p className={`mt-1 text-xl font-bold ${v4.averagePnl > 0 ? "text-emerald-400" : v4.averagePnl < 0 ? "text-red-400" : ""}`}>€{fmt(v4.averagePnl)}</p>
               </div>
               <div className="rounded-lg bg-gray-950/70 p-4">
                 <p className="text-xs text-gray-500">Trenutno mogući gubitak</p>
-                <p className="mt-1 text-xl font-bold text-orange-300">€{fmt(v3.openRisk)}</p>
+                <p className="mt-1 text-xl font-bold text-orange-300">€{fmt(v4.openRisk)}</p>
               </div>
             </div>
-            {v3.latest && (
+            {v4.latest && (
               <div className="mt-4 rounded-lg border border-gray-800 bg-gray-950/60 p-4">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Zadnja odluka · {fmtDate(v3.latest.timestamp)}</p>
-                <p className="mt-2 text-sm text-gray-200">{v3.latest.summary}</p>
-                {v3.latest.confidence_score != null && <p className="mt-1 text-xs text-gray-500">Sigurnost: {v3.latest.confidence_score}/100</p>}
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Zadnja odluka · {fmtDate(v4.latest.timestamp)}</p>
+                <p className="mt-2 text-sm text-gray-200">{v4.latest.summary}</p>
+                {v4.latest.confidence_score != null && <p className="mt-1 text-xs text-gray-500">Sigurnost: {v4.latest.confidence_score}/100</p>}
               </div>
             )}
           </>

@@ -47,8 +47,8 @@ async function getSettingsResponse() {
   return {
     strategy,
     updatedAt: settings?.updated_at ?? null,
-    checkIntervalMinutes: 15,
-    sources: ["Bloomberg", "Reuters", "Trading Economics"],
+    checkIntervalMinutes: 5,
+    sources: ["Bloomberg", "Reuters", "Trading Economics", "CNBC", "MarketWatch", "Finviz"],
     tactics: {
       patient: { limit: 3, windowHours: 168, used: patientUsed, minimumConfidence: 70, maximumRiskPercent: 2 },
       fast: { limit: 3, windowHours: 24, used: fastUsed, minimumConfidence: 80, maximumRiskPercent: 1 },

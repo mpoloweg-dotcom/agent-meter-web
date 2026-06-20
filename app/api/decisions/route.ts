@@ -10,7 +10,7 @@ export async function GET() {
              invalidation, confidence_score, current_price, previous_close,
              price_change_pct, strategy, trade_id, agent_version
       FROM agent_decisions
-      WHERE agent_version = '3.0'
+      WHERE agent_version IN ('4.0', '3.0')
       ORDER BY timestamp DESC, id DESC
       LIMIT 100
     `);

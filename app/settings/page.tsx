@@ -77,10 +77,10 @@ export default function SettingsPage() {
     <div>
       <div className="mb-2 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">Postavke agenta</h1>
-        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">3.0</span>
+        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">4.0</span>
       </div>
       <p className="mb-6 text-gray-400">
-        Ovdje biraš koliko će agent biti strpljiv ili brz. Vijesti u oba slučaja provjerava svakih 15 minuta.
+        Ovdje biraš koliko će agent biti strpljiv ili brz. Vijesti u oba slučaja provjerava svakih 5 minuta.
       </p>
 
       {loading && <p className="text-gray-500">Učitavam postavke…</p>}

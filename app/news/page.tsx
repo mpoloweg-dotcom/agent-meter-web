@@ -18,7 +18,7 @@ export default function NewsPage() {
       <div className="mb-6">
         <div className="flex flex-wrap items-center gap-3 mb-2">
           <h1 className="text-2xl font-bold tracking-tight">Vijesti agenta</h1>
-          <span className="rounded-full bg-[#002211] px-3 py-1 text-xs font-medium text-[#00ff88] border border-[#00ff88]/20">v3.0</span>
+          <span className="rounded-full bg-[#002211] px-3 py-1 text-xs font-medium text-[#00ff88] border border-[#00ff88]/20">v4.0</span>
           <span className="flex items-center gap-1.5 text-xs text-[#00ff88]/70"><span className="news-dot" />Osvežava se svake 3s</span>
         </div>
         <p className="text-gray-500 text-sm">Što agent čita, analizira i odlučuje na temelju vijesti u stvarnom vremenu.</p>

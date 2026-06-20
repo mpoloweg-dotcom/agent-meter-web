@@ -24,7 +24,7 @@ export default function AnalyticsPage() {
       <div className="mb-6">
         <div className="flex flex-wrap items-center gap-3 mb-2">
           <h1 className="text-2xl font-bold tracking-tight">Analitika</h1>
-          <span className="rounded-full bg-[#002211] px-3 py-1 text-xs font-medium text-[#00ff88] border border-[#00ff88]/20">v3.0</span>
+          <span className="rounded-full bg-[#002211] px-3 py-1 text-xs font-medium text-[#00ff88] border border-[#00ff88]/20">v4.0</span>
         </div>
         <p className="text-gray-500 text-sm">Detaljna analiza performansi — P&amp;L kroz vrijeme, uspješnost po instrumentu i mjesečni pregled.</p>
       </div>

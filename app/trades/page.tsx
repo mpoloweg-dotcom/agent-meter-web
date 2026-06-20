@@ -144,7 +144,7 @@ export default function TradesPage() {
     <div>
       <div className="mb-2 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">Kupnje i prodaje</h1>
-        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">3.0</span>
+        <span className="rounded-full bg-emerald-950 px-3 py-1 text-xs font-medium text-emerald-300">4.0</span>
       </div>
       <p className="text-gray-400 mb-6">Svi potezi koje je agent napravio s novcem za vježbu.</p>
 
@@ -281,7 +281,7 @@ export default function TradesPage() {
                 <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">{fmtDate(t.timestamp)}</td>
                 <td className="px-4 py-3 text-gray-400 max-w-xs">
                   <span className="line-clamp-2 text-xs">{t.reason ?? "—"}</span>
-                  {t.agent_version === "3.0" && (
+                  {(t.agent_version === "3.0" || t.agent_version === "4.0") && (
                     <details className="mt-2 text-xs">
                       <summary className="cursor-pointer text-emerald-400">Pogledaj plan i dokaze</summary>
                       <div className="mt-2 min-w-64 space-y-2 rounded-lg border border-gray-700 bg-gray-950 p-3 leading-relaxed">

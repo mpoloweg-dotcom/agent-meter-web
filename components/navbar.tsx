@@ -24,7 +24,7 @@ export function NavBar() {
             <span className="text-xl">{"\ud83e\udd16"}</span>
             <div className="flex flex-col leading-tight">
               <span className="font-bold text-sm text-white tracking-tight">agentRaider</span>
-              <span className="text-[10px] text-[#00ff88]/60 tracking-wider uppercase">Terminal 3.0</span>
+              <span className="text-[10px] text-[#00ff88]/60 tracking-wider uppercase">Terminal 4.0</span>
             </div>
           </Link>
           <div className="hidden md:flex items-center gap-1">
